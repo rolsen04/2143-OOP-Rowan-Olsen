@@ -1,4 +1,4 @@
-## Name: Rowan Olsen
-#### Repo: 2143 OOP
+## Rowan Olsen
+#### Repo: 2143 Object Oriented Programming
 #### Email: rolsen1201@my.msutexas.edu
-#### Image: <img src = [URL=https://imgbox.com/sksmWhLW][IMG]https://thumbs2.imgbox.com/b9/45/sksmWhLW_t.jpg[/IMG][/URL]" width= "200">
+#### Image: <a href="https://imgbox.com/sksmWhLW" target="_blank"><img src="https://thumbs2.imgbox.com/b9/45/sksmWhLW_t.jpg" alt="image host"/></a>
