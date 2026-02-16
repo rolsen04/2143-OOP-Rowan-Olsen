@@ -1,0 +1,405 @@
+🧠 OOP Worksheet & Study Guide  
+Making Your Own Types Feel Like the Language Meant Them to Exist  
+
+Due: 16 Feb 2026 by class time.
+
+If this feels long, good.  
+If it feels unfinished, also good.  
+If you feel like there’s “always more,” congratulations — that feeling is the curriculum.
+
+This document serves three purposes:
+
+Homework  
+Study guide  
+A mild personality test for how you think about software design  
+
+Read the questions carefully. Many are intentionally phrased to trip up rote memorization.
+
+---
+
+# Part 0 — A Necessary Reality Check
+
+Most people think:
+
+OOP = inheritance
+
+That’s like saying:
+
+Math = long division
+
+Inheritance exists.  
+It is sometimes useful.  
+It is wildly overused.
+
+This worksheet is about building abstract data types (ADTs) that behave like they belong in the language — not about summoning class hierarchies like Pokémon.
+
+---
+
+# Part 1 — Review, But With Consequences
+
+## 1️⃣ Stacks & Queues (ADT Reality Check)
+
+Answer clearly and concisely.
+
+Compare array-based vs list-based implementations of stacks and queues:
+
+memory layout  
+resizing behavior  
+cache friendliness  
+(Yes, cache friendliness matters. No, you may not ignore it.)
+
+### Answer:
+
+**Memory layout**
+
+- Array-based: contiguous memory.
+- List-based: nodes scattered in memory connected by pointers.
+
+**Resizing behavior**
+
+- Array-based: fixed capacity; must allocate a larger array and copy when full.
+- List-based: grows one node at a time; no full copy required.
+
+**Cache friendliness**
+
+- Array-based: strong cache locality, generally faster in practice.
+- List-based: poor cache behavior due to pointer chasing.
+
+---
+
+Why is std::vector a natural fit for a stack, but awkward for a queue?
+
+### Answer:
+
+A stack pushes and pops from the back, which `std::vector` supports efficiently.  
+A queue removes from the front, and removing the first element in a vector requires shifting everything, which is O(n).
+
+---
+
+Define the invariant for:
+
+a stack  
+
+### Answer:
+Only the most recently inserted element may be removed (LIFO).
+
+a queue  
+
+### Answer:
+The earliest inserted element not yet removed must be removed next (FIFO).
+
+If your invariant takes more than one sentence, it’s not an invariant — it’s a confession.
+
+---
+
+# Part 2 — Overloading vs Overriding  
+(Same Word Root, Completely Different Beasts)
+
+## 2️⃣ Conceptual Distinction
+
+Fill out the table:
+
+| Feature | Overloading | Overriding |
+|----------|-------------|------------|
+| Resolved at | Compile time | Runtime |
+| Requires inheritance | No | Yes |
+| Same function name | Yes | Yes |
+| Same parameter list | No | Yes |
+| Polymorphism involved | Static | Dynamic |
+
+Then answer:
+
+Why is overloading a compile-time convenience?
+
+### Answer:
+Because the compiler selects the correct function based on parameter types before the program runs.
+
+Why is overriding a runtime contract?
+
+### Answer:
+Because the function call is resolved at runtime using virtual dispatch based on the object's actual type.
+
+Why do beginners confuse the two?
+
+### Answer:
+They both use the same function name and are associated with polymorphism, but they operate at different stages (compile time vs runtime).
+
+Why is that confusion dangerous?
+
+### Answer:
+It leads to missing `virtual`, incorrect assumptions about behavior, and functions not being called as expected.
+
+Hint: The compiler is not your therapist. It will not guess your intent.
+
+---
+
+# Part 3 — Constructors & Initialization Lists  
+(Where C++ Stops Holding Your Hand)
+
+## 3️⃣ Initialization Lists or Else
+
+Given:
+
+```cpp
+class Widget {
+private:
+    const int id;
+    std::string name;
+
+public:
+    Widget(int id, std::string name);
+};
+```
+
+Why must this constructor use an initialization list?
+
+### Answer:
+Because `id` is const and must be initialized when the object is constructed.
+
+What happens if you try to assign id inside the constructor body?
+
+### Answer:
+Compilation error. A const member cannot be reassigned.
+
+Write the correct constructor.
+
+```cpp
+Widget(int id, std::string name)
+    : id(id), name(name) {}
+```
+
+Name one other situation where initialization lists are required (research-lite).
+
+### Answer:
+Reference members and base class constructors.
+
+Saying “because the compiler told me to” is not an explanation.
+
+---
+
+## 4️⃣ Copy Constructor vs Assignment Operator  
+Research + reasoning required.
+
+When is the copy constructor invoked?
+
+### Answer:
+When a new object is created from an existing object.
+
+When is the assignment operator invoked?
+
+### Answer:
+When assigning to an already existing object.
+
+Why do both exist?
+
+### Answer:
+Construction initializes memory. Assignment replaces existing state. They are different stages of an object's lifecycle.
+
+What subtle bugs appear if you confuse them?
+
+### Answer:
+Memory leaks, shallow copy issues, double deletion, and broken resource ownership.
+
+“They both copy stuff” earns partial credit and a sigh.
+
+---
+
+# Part 4 — struct vs class  
+(Same Machine Code, Different Intent)
+
+## 5️⃣ Design Signal, Not Syntax Sugar
+
+What is the only language-level difference between struct and class?
+
+### Answer:
+Default access level (struct = public, class = private).
+
+Why does C++ even allow both?
+
+### Answer:
+To communicate design intent.
+
+When does choosing struct communicate intent better than class?
+
+### Answer:
+When modeling simple data aggregates without strict invariants.
+
+Why does intent matter more than syntax in large systems?
+
+### Answer:
+Because clarity prevents misuse and improves maintainability.
+
+---
+
+# Part 5 — Operator Overloading  
+(Where ADTs Start Feeling Real)
+
+## 6️⃣ Rules You Don’t Get to Ignore
+
+Why can’t C++ overload:
+
+.  
+::  
+sizeof  
+
+### Answer:
+They are fundamental language operators tied to compile-time behavior and object structure.
+
+Why should operator+ not mutate the left-hand operand?
+
+### Answer:
+Because + represents value addition and is expected to return a new object, not modify the original.
+
+Why is operator<< almost never a member function?
+
+### Answer:
+Because the left operand is std::ostream, which we cannot modify, so the operator must be non-member.
+
+If your answer is “because that’s how everyone does it,” dig deeper.
+
+---
+
+## 7️⃣ The “other / rhs” Trap (Yes, It’s Intentional)
+
+Given:
+
+```cpp
+Point operator+(const Point& rhs) const;
+```
+
+Which object owns this function?
+
+### Answer:
+The left-hand operand.
+
+What does rhs represent?
+
+### Answer:
+The right-hand operand.
+
+How can this function access rhs.x if x is private?
+
+### Answer:
+Objects of the same class can access each other’s private members.
+
+What does this tell you about class-level vs object-level access?
+
+### Answer:
+Access control is class-based, not object-based.
+
+This question exists specifically to break incorrect mental models.
+
+---
+
+# Part 6 — friend: Controlled Violation of Privacy
+
+## 8️⃣ Friend or Design Smell?
+
+What does the friend keyword actually do?
+
+### Answer:
+It grants a function or class access to private members.
+
+Why is operator<< commonly declared as a friend?
+
+### Answer:
+Because it needs access to private data but must be non-member.
+
+Why is excessive use of friend a red flag?
+
+### Answer:
+It weakens encapsulation and signals poor design boundaries.
+
+Give one legitimate use case and one illegitimate one.
+
+### Answer:
+Legitimate: stream insertion operator.  
+Illegitimate: bypassing proper interface design just to make code compile.
+
+---
+
+# Part 7 — Core Programming Task
+
+## 9️⃣ Build a Native-Feeling Point2D
+
+```cpp
+#include <iostream>
+
+class Point2D {
+private:
+    double x;
+    double y;
+
+public:
+    Point2D() : x(0), y(0) {}
+
+    Point2D(double x, double y) : x(x), y(y) {}
+
+    Point2D(const Point2D& other) : x(other.x), y(other.y) {}
+
+    Point2D operator+(const Point2D& rhs) const {
+        return Point2D(x + rhs.x, y + rhs.y);
+    }
+
+    Point2D operator-(const Point2D& rhs) const {
+        return Point2D(x - rhs.x, y - rhs.y);
+    }
+
+    bool operator==(const Point2D& rhs) const {
+        return x == rhs.x && y == rhs.y;
+    }
+
+    bool operator!=(const Point2D& rhs) const {
+        return !(*this == rhs);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Point2D& p) {
+        os << "(" << p.x << ", " << p.y << ")";
+        return os;
+    }
+};
+```
+
+---
+
+# Part 8 — Composition (The Quiet MVP of OOP)
+
+Composition means assembling behavior from parts, not becoming those parts.
+
+Or more bluntly:
+
+“Has-a” beats “is-a” most of the time.
+
+Inheritance expresses identity.  
+Composition expresses capability.  
+
+Most real systems care more about capability.
+
+---
+
+# Part 9 — Reflection (Yes, This Is Graded)
+
+Does your Point2D feel like a built-in type?
+
+### Answer:
+Yes. It supports arithmetic, comparison, and streaming naturally.
+
+What design choice most contributed to that feeling?
+
+### Answer:
+Const correctness and returning new objects from operators.
+
+Which OOP concept currently feels overhyped?
+
+### Answer:
+Inheritance.
+
+Which one feels underrated?
+
+### Answer:
+Encapsulation and const correctness.
+
+What part of this worksheet made you uncomfortable — and why?
+
+### Answer:
+Designing operators without breaking expectations required thinking about behavior guarantees, not just syntax.
