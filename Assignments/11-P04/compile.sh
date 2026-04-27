@@ -1,0 +1,1 @@
+g++ -std=c++20 -Iinclude src/main.cpp Image.cpp Color.cpp Brighten.cpp Grayscale.cpp FlipH.cpp FlipV.cpp Rotate.cpp Args.cpp Pipeline.cpp Kernel.cpp KernelFilter.cpp -o imgtool
